@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/popover";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, addDays, subDays, addMonths, subMonths, differenceInDays, parseISO, isWithinInterval, isSameDay, parse } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Check, ChevronsUpDown, Calendar as CalendarIcon, Users, ChevronLeft, ChevronRight, LayoutGrid, List, GripVertical, Wand2, Save, Download, Upload, RotateCcw } from "lucide-react";
+import { Check, ChevronsUpDown, Calendar as CalendarIcon, Users, ChevronLeft, ChevronRight, LayoutGrid, List, GripVertical, Wand2, Save, Download, Upload, RotateCcw, Eraser, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import * as XLSX from "xlsx";
@@ -69,6 +69,9 @@ interface ShiftSchedulerProps {
   holidays: Holiday[];
   onSaveShifts: (updatedShifts: Shift[]) => void;
   isAdmin?: boolean;
+  nursesPerDay?: number;
+  onUpdateConfig?: (config: any) => void;
+  config?: any;
 }
 
 export default function ShiftScheduler({
@@ -77,10 +80,13 @@ export default function ShiftScheduler({
   holidays,
   onSaveShifts,
   isAdmin = false,
+  nursesPerDay: initialNursesPerDay = 3,
+  onUpdateConfig,
+  config,
 }: ShiftSchedulerProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"week" | "month">("month");
-  const [nursesPerDay, setNursesPerDay] = useState(3);
+  const [nursesPerDay, setNursesPerDay] = useState(initialNursesPerDay);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localShifts, setLocalShifts] = useState<Shift[]>(shifts || []);
 
@@ -88,6 +94,18 @@ export default function ShiftScheduler({
   useEffect(() => {
     setLocalShifts(shifts || []);
   }, [shifts]);
+
+  useEffect(() => {
+    setNursesPerDay(initialNursesPerDay);
+  }, [initialNursesPerDay]);
+
+  const handleNursesPerDayChange = (val: string) => {
+    const num = parseInt(val);
+    setNursesPerDay(num);
+    if (onUpdateConfig && config) {
+      onUpdateConfig({ ...config, nursesPerDay: num });
+    }
+  };
 
   const isDirty = useMemo(() => {
     return JSON.stringify(localShifts) !== JSON.stringify(shifts);
@@ -198,6 +216,110 @@ export default function ShiftScheduler({
 
     setLocalShifts(updatedShifts);
     toast.info("Đã sắp lịch tạm thời. Nhấn 'Lưu lại' để áp dụng chính thức.");
+  };
+
+  const handleClearSchedule = () => {
+    const updatedShifts = [...localShifts];
+    visibleDays.forEach(day => {
+      const dateStr = format(day, "yyyy-MM-dd");
+      const idx = updatedShifts.findIndex(s => s.date === dateStr);
+      if (idx >= 0) {
+        updatedShifts[idx] = {
+          ...updatedShifts[idx],
+          assignments: Array(nursesPerDay).fill({ staffId: "" })
+        };
+      } else {
+        updatedShifts.push({
+          id: crypto.randomUUID(),
+          date: dateStr,
+          assignments: Array(nursesPerDay).fill({ staffId: "" })
+        });
+      }
+    });
+    setLocalShifts(updatedShifts);
+    toast.info("Đã xóa toàn bộ phân công trong giai đoạn này.");
+  };
+
+  const handleAutoFill = () => {
+    // 1. Calculate stats including existing assignments in the visible period
+    const staffStats = staff.map(s => {
+      // Count existing assignments in the visible days
+      const currentCount = visibleDays.reduce((acc, day) => {
+        const dateStr = format(day, "yyyy-MM-dd");
+        const shift = localShifts.find(sh => sh.date === dateStr);
+        return acc + (shift?.assignments.some(a => a.staffId === s.id) ? 1 : 0);
+      }, 0);
+
+      // Find last shift before the visible period
+      const lastShiftBefore = localShifts
+        .filter(sh => parseISO(sh.date) < visibleDays[0])
+        .sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime())
+        .find(sh => sh.assignments.some(a => a.staffId === s.id));
+      
+      return {
+        id: s.id,
+        target: s.targetShifts || 8,
+        count: currentCount, 
+        lastDate: lastShiftBefore ? parseISO(lastShiftBefore.date) : null,
+        unavailableDays: s.unavailableDays || []
+      };
+    });
+
+    const updatedShifts: Shift[] = [...localShifts];
+
+    // 2. Iterate through days
+    visibleDays.forEach(day => {
+      const dateStr = format(day, "yyyy-MM-dd");
+      const dayOfWeek = day.getDay();
+      
+      let shiftIdx = updatedShifts.findIndex(s => s.date === dateStr);
+      if (shiftIdx < 0) {
+        const newShift = { id: crypto.randomUUID(), date: dateStr, assignments: Array(nursesPerDay).fill({ staffId: "" }) };
+        updatedShifts.push(newShift);
+        shiftIdx = updatedShifts.length - 1;
+      }
+
+      const currentAssignments = [...updatedShifts[shiftIdx].assignments];
+      // Ensure currentAssignments has correct length
+      while (currentAssignments.length < nursesPerDay) {
+        currentAssignments.push({ staffId: "" });
+      }
+
+      const emptyIndices = currentAssignments.map((a, i) => a.staffId === "" ? i : -1).filter(i => i !== -1);
+      
+      if (emptyIndices.length === 0) return;
+
+      const alreadyAssignedIds = currentAssignments.map(a => a.staffId).filter(id => id !== "");
+
+      // Filter available staff (not unavailable and not already assigned today)
+      const availableStaff = staffStats.filter(s => 
+        !s.unavailableDays.includes(dayOfWeek) && !alreadyAssignedIds.includes(s.id)
+      );
+
+      // Sort by priority
+      availableStaff.sort((a, b) => {
+        const distA = a.lastDate ? differenceInDays(day, a.lastDate) : 999;
+        const distB = b.lastDate ? differenceInDays(day, b.lastDate) : 999;
+        if (distA !== distB) return distB - distA;
+        const remA = a.target - a.count;
+        const remB = b.target - b.count;
+        return remB - remA;
+      });
+
+      // Fill empty slots
+      emptyIndices.forEach((slotIdx, i) => {
+        if (availableStaff[i]) {
+          currentAssignments[slotIdx] = { staffId: availableStaff[i].id };
+          availableStaff[i].count++;
+          availableStaff[i].lastDate = day;
+        }
+      });
+
+      updatedShifts[shiftIdx] = { ...updatedShifts[shiftIdx], assignments: currentAssignments };
+    });
+
+    setLocalShifts(updatedShifts);
+    toast.info("Đã bổ sung lịch trống. Nhấn 'Lưu lại' để áp dụng.");
   };
 
   const handleExportExcel = () => {
@@ -402,15 +524,38 @@ export default function ShiftScheduler({
 
             <div className="flex flex-wrap items-center gap-2">
               {isAdmin && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleAutoSchedule}
-                  className="h-9 border-blue-200 dark:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                >
-                  <Wand2 className="h-4 w-4 mr-2" />
-                  Tự động sắp lịch
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAutoSchedule}
+                    className="h-9 border-blue-200 dark:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                    title="Sắp xếp lại toàn bộ lịch trong giai đoạn này"
+                  >
+                    <Wand2 className="h-4 w-4 mr-2" />
+                    Tự động sắp lịch
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAutoFill}
+                    className="h-9 border-indigo-200 dark:border-indigo-900/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
+                    title="Chỉ điền vào những ô còn trống"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Tự động bổ sung
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleClearSchedule}
+                    className="h-9 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                    title="Xóa toàn bộ phân công trong giai đoạn này"
+                  >
+                    <Eraser className="h-4 w-4 mr-2" />
+                    Xóa lịch
+                  </Button>
+                </div>
               )}
               <Button 
                 variant="outline" 
@@ -459,7 +604,7 @@ export default function ShiftScheduler({
             <div className="flex flex-col gap-1">
               <Select
                 value={nursesPerDay.toString()}
-                onValueChange={(val) => setNursesPerDay(parseInt(val))}
+                onValueChange={handleNursesPerDayChange}
                 disabled={!isAdmin}
               >
               <SelectTrigger className="w-[150px] h-9 dark:border-slate-700 dark:bg-slate-900">

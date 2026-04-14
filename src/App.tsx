@@ -337,6 +337,10 @@ export default function App() {
     toast.success("Đã xóa thông báo");
   };
 
+  const handleUpdateConfig = (config: AppData["config"]) => {
+    setData(prev => ({ ...prev, config }));
+  };
+
   const userNotifications = useMemo(() => {
     return data.notifications.filter(n => n.userId === currentUser?.id);
   }, [data.notifications, currentUser]);
@@ -530,6 +534,9 @@ export default function App() {
               holidays={data.holidays}
               onSaveShifts={handleSaveShifts}
               isAdmin={isAdmin}
+              nursesPerDay={data.config.nursesPerDay}
+              onUpdateConfig={handleUpdateConfig}
+              config={data.config}
             />
           </TabsContent>
 
