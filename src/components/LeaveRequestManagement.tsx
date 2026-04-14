@@ -83,16 +83,16 @@ export default function LeaveRequestManagement({
 
   const getStatusBadge = (status: LeaveRequest["status"]) => {
     switch (status) {
-      case "PENDING": return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Chờ duyệt</Badge>;
-      case "APPROVED": return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Đã duyệt</Badge>;
-      case "REJECTED": return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Từ chối</Badge>;
+      case "PENDING": return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800">Chờ duyệt</Badge>;
+      case "APPROVED": return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">Đã duyệt</Badge>;
+      case "REJECTED": return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Từ chối</Badge>;
     }
   };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-slate-800">Yêu cầu nghỉ phép</h2>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Yêu cầu nghỉ phép</h2>
         {!isAdmin && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger render={<Button className="bg-emerald-600 hover:bg-emerald-700" />}>
@@ -140,25 +140,25 @@ export default function LeaveRequestManagement({
         )}
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden dark:border-slate-800">
         <Table>
-          <TableHeader className="bg-slate-50">
-            <TableRow>
-              {isAdmin && <TableHead>Nhân viên</TableHead>}
-              <TableHead>Thời gian</TableHead>
-              <TableHead>Lý do</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              {isAdmin && <TableHead className="text-right">Thao tác</TableHead>}
+          <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
+            <TableRow className="dark:border-slate-800">
+              {isAdmin && <TableHead className="dark:text-slate-300">Nhân viên</TableHead>}
+              <TableHead className="dark:text-slate-300">Thời gian</TableHead>
+              <TableHead className="dark:text-slate-300">Lý do</TableHead>
+              <TableHead className="dark:text-slate-300">Trạng thái</TableHead>
+              {isAdmin && <TableHead className="text-right dark:text-slate-300">Thao tác</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredRequests.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((r) => (
-              <TableRow key={r.id}>
-                {isAdmin && <TableCell className="font-medium">{getStaffName(r.staffId)}</TableCell>}
-                <TableCell className="text-sm">
+              <TableRow key={r.id} className="dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                {isAdmin && <TableCell className="font-medium dark:text-slate-200">{getStaffName(r.staffId)}</TableCell>}
+                <TableCell className="text-sm dark:text-slate-300">
                   {format(parseISO(r.startDate), "dd/MM/yyyy")} - {format(parseISO(r.endDate), "dd/MM/yyyy")}
                 </TableCell>
-                <TableCell className="text-sm max-w-[200px] truncate">{r.reason}</TableCell>
+                <TableCell className="text-sm max-w-[200px] truncate dark:text-slate-400">{r.reason}</TableCell>
                 <TableCell>{getStatusBadge(r.status)}</TableCell>
                 {isAdmin && (
                   <TableCell className="text-right">
@@ -167,7 +167,7 @@ export default function LeaveRequestManagement({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20"
                           onClick={() => onUpdateStatus(r.id, "APPROVED")}
                         >
                           <CheckCircle className="h-4 w-4 mr-1" /> Duyệt
@@ -175,7 +175,7 @@ export default function LeaveRequestManagement({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                           onClick={() => onUpdateStatus(r.id, "REJECTED")}
                         >
                           <XCircle className="h-4 w-4 mr-1" /> Từ chối

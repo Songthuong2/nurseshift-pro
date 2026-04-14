@@ -463,40 +463,40 @@ export default function App() {
             <div className="flex justify-center">
               <TabsList className="bg-white dark:bg-slate-900 border dark:border-slate-800 shadow-sm p-2 !h-auto min-h-[56px] flex-wrap justify-center gap-x-2 gap-y-3 overflow-visible w-full max-w-4xl">
                 {isAdmin && (
-                  <TabsTrigger value="summary" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto">
+                  <TabsTrigger value="summary" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto dark:text-slate-400">
                     <LayoutDashboard className="h-4 w-4 mr-2" />
                     Tổng hợp
                   </TabsTrigger>
                 )}
                 {isAdmin && (
-                  <TabsTrigger value="staff" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto">
+                  <TabsTrigger value="staff" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto dark:text-slate-400">
                     <Users className="h-4 w-4 mr-2" />
                     Nhân viên
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="shifts" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto">
+                <TabsTrigger value="shifts" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto dark:text-slate-400">
                   <CalendarDays className="h-4 w-4 mr-2" />
                   Lịch trực
                 </TabsTrigger>
-                <TabsTrigger value="personal-schedule" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto">
+                <TabsTrigger value="personal-schedule" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto dark:text-slate-400">
                   <UserCircle className="h-4 w-4 mr-2" />
                   Lịch của tôi
                 </TabsTrigger>
                 {isAdmin && (
-                  <TabsTrigger value="holidays" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto">
+                  <TabsTrigger value="holidays" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto dark:text-slate-400">
                     <Palmtree className="h-4 w-4 mr-2" />
                     Ngày lễ
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="leave" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto">
+                <TabsTrigger value="leave" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto dark:text-slate-400">
                   <ClipboardList className="h-4 w-4 mr-2" />
                   Nghỉ phép
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto">
+                <TabsTrigger value="notifications" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto dark:text-slate-400">
                   <Bell className="h-4 w-4 mr-2" />
                   Thông báo
                 </TabsTrigger>
-                <TabsTrigger value="chat" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto">
+                <TabsTrigger value="chat" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto dark:text-slate-400">
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Trò chuyện
                 </TabsTrigger>

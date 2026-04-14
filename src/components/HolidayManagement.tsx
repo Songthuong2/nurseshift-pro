@@ -81,7 +81,7 @@ export default function HolidayManagement({
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-slate-800">Danh sách ngày nghỉ lễ</h2>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Danh sách ngày nghỉ lễ</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger render={<Button className="bg-orange-600 hover:bg-orange-700" />}>
               <Plus className="h-4 w-4 mr-2" />
@@ -136,35 +136,35 @@ export default function HolidayManagement({
         </Dialog>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden dark:border-slate-800">
         <Table>
-          <TableHeader className="bg-slate-50">
-            <TableRow>
-              <TableHead className="w-[150px]">Ngày Dương lịch</TableHead>
-              <TableHead className="w-[120px]">Ngày Âm lịch</TableHead>
-              <TableHead>Tên ngày nghỉ</TableHead>
-              <TableHead>Nhân viên trực</TableHead>
-              <TableHead>Ghi chú</TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
+          <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
+            <TableRow className="dark:border-slate-800">
+              <TableHead className="w-[150px] dark:text-slate-300">Ngày Dương lịch</TableHead>
+              <TableHead className="w-[120px] dark:text-slate-300">Ngày Âm lịch</TableHead>
+              <TableHead className="dark:text-slate-300">Tên ngày nghỉ</TableHead>
+              <TableHead className="dark:text-slate-300">Nhân viên trực</TableHead>
+              <TableHead className="dark:text-slate-300">Ghi chú</TableHead>
+              <TableHead className="text-right dark:text-slate-300">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {holidays.sort((a, b) => a.date.localeCompare(b.date)).map((h) => {
               const staffOnShift = getStaffOnShift(h.date);
               return (
-                <TableRow key={h.id} className="hover:bg-slate-50/50 transition-colors">
-                  <TableCell className="font-medium">
+                <TableRow key={h.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors dark:border-slate-800">
+                  <TableCell className="font-medium dark:text-slate-200">
                     {format(parseISO(h.date), "dd/MM/yyyy")}
                   </TableCell>
                   <TableCell>
-                    {h.lunarDate ? <Badge variant="secondary">{h.lunarDate}</Badge> : "-"}
+                    {h.lunarDate ? <Badge variant="secondary" className="dark:bg-slate-800 dark:text-slate-300">{h.lunarDate}</Badge> : "-"}
                   </TableCell>
-                  <TableCell className="font-semibold text-orange-700">{h.name}</TableCell>
+                  <TableCell className="font-semibold text-orange-700 dark:text-orange-400">{h.name}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {staffOnShift.length > 0 ? (
                         staffOnShift.map((name, idx) => (
-                          <Badge key={idx} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          <Badge key={idx} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
                             {name}
                           </Badge>
                         ))
@@ -173,7 +173,7 @@ export default function HolidayManagement({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-slate-600">{h.note || "-"}</TableCell>
+                  <TableCell className="text-sm text-slate-600 dark:text-slate-400">{h.note || "-"}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => onDeleteHoliday(h.id)}>
                       <Trash2 className="h-4 w-4 text-red-600" />
@@ -193,9 +193,9 @@ export default function HolidayManagement({
         </Table>
       </div>
       
-      <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex gap-3 items-start">
-        <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-        <div className="text-sm text-blue-800">
+      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30 flex gap-3 items-start">
+        <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+        <div className="text-sm text-blue-800 dark:text-blue-300">
           <p className="font-semibold mb-1">Gợi ý:</p>
           <p>Bạn có thể tự tìm kiếm các ngày lễ Âm lịch Việt Nam và nhập vào danh sách này để hệ thống tự động thống kê số ngày trực lễ cho nhân viên.</p>
         </div>

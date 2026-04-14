@@ -106,14 +106,14 @@ export default function SummaryDashboard({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {announcements.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3).map((a) => (
               <Card key={a.id} className={cn(
-                "border-l-4 shadow-sm hover:shadow-md transition-shadow",
+                "border-l-4 shadow-sm hover:shadow-md transition-shadow dark:bg-slate-900 dark:border-slate-800",
                 a.type === "INFO" ? "border-l-blue-500" : 
                 a.type === "WARNING" ? "border-l-amber-500" : "border-l-red-500"
               )}>
                 <CardHeader className="p-4 pb-2">
                   <div className="flex justify-between items-start">
-                    <CardTitle className="text-sm font-bold truncate pr-4">{a.title}</CardTitle>
-                    <span className="text-[10px] text-slate-500 whitespace-nowrap">
+                    <CardTitle className="text-sm font-bold truncate pr-4 dark:text-slate-200">{a.title}</CardTitle>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
                       {format(parseISO(a.createdAt), "dd/MM", { locale: vi })}
                     </span>
                   </div>
@@ -121,8 +121,8 @@ export default function SummaryDashboard({
                 <CardContent className="p-4 pt-0">
                   <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mb-2">{a.content}</p>
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-medium text-slate-500 italic">By {a.authorName}</span>
-                    {a.type === "URGENT" && <Badge className="bg-red-100 text-red-700 text-[8px] h-4 px-1 border-none">Khẩn</Badge>}
+                    <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 italic">By {a.authorName}</span>
+                    {a.type === "URGENT" && <Badge className="bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 text-[8px] h-4 px-1 border-none">Khẩn</Badge>}
                   </div>
                 </CardContent>
               </Card>
@@ -138,18 +138,18 @@ export default function SummaryDashboard({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2">
+        <Card className="md:col-span-2 dark:bg-slate-900 dark:border-slate-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Biểu đồ trực (Top 10 nhân viên)</CardTitle>
+            <CardTitle className="text-sm font-medium dark:text-slate-200">Biểu đồ trực (Top 10 nhân viên)</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-[200px] w-full min-h-[200px]">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                  <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} stroke="#94a3b8" />
+                  <YAxis fontSize={12} tickLine={false} axisLine={false} stroke="#94a3b8" />
                   <RechartsTooltip 
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
@@ -172,33 +172,35 @@ export default function SummaryDashboard({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Bộ lọc thống kê</CardTitle>
+            <CardTitle className="text-sm font-medium dark:text-slate-200">Bộ lọc thống kê</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-medium uppercase text-muted-foreground">Tìm kiếm</label>
+              <label className="text-xs font-medium uppercase text-muted-foreground dark:text-slate-400">Tìm kiếm</label>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Tên nhân viên..." 
-                  className="pl-8" 
+                  className="pl-8 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-medium uppercase text-muted-foreground">Khoảng thời gian</label>
+              <label className="text-xs font-medium uppercase text-muted-foreground dark:text-slate-400">Khoảng thời gian</label>
               <div className="grid grid-cols-2 gap-2">
                 <Input 
                   type="date" 
+                  className="dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200"
                   value={dateRange.start} 
                   onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
                 />
                 <Input 
                   type="date" 
+                  className="dark:bg-slate-950 dark:border-slate-800 dark:text-slate-200"
                   value={dateRange.end} 
                   onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
                 />
@@ -211,7 +213,7 @@ export default function SummaryDashboard({
       <div className="rounded-xl border dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
-            <TableRow>
+            <TableRow className="dark:border-slate-800">
               <TableHead className="dark:text-slate-300">Họ và tên</TableHead>
               <TableHead className="dark:text-slate-300">Tên quy ước</TableHead>
               <TableHead className="dark:text-slate-300">Trực theo tháng</TableHead>
@@ -221,7 +223,7 @@ export default function SummaryDashboard({
           </TableHeader>
           <TableBody>
             {stats.map((s) => (
-              <TableRow key={s.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+              <TableRow key={s.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors dark:border-slate-800">
                 <TableCell className="font-medium text-slate-900 dark:text-slate-200">{s.name}</TableCell>
                 <TableCell className="text-blue-600 dark:text-blue-400 font-medium">{s.code}</TableCell>
                 <TableCell>
@@ -229,17 +231,19 @@ export default function SummaryDashboard({
                     {Object.entries(s.monthlyCounts).map(([month, dates]) => (
                       <div key={month}>
                         <Tooltip>
-                          <TooltipTrigger render={<Badge variant="outline" className="cursor-help bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900/50" />}>
+                          <TooltipTrigger>
+                            <Badge variant="outline" className="cursor-help bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900/50">
                               {month}: {(dates as string[]).length} ngày
+                            </Badge>
                           </TooltipTrigger>
-                          <TooltipContent>
+                          <TooltipContent className="dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200">
                             <p>Các ngày trực: {(dates as string[]).join(", ")}</p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
                     ))}
                     {Object.keys(s.monthlyCounts).length === 0 && (
-                      <span className="text-xs text-muted-foreground italic">Không có dữ liệu</span>
+                      <span className="text-xs text-muted-foreground italic dark:text-slate-500">Không có dữ liệu</span>
                     )}
                   </div>
                 </TableCell>

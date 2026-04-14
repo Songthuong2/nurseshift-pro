@@ -70,22 +70,22 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
       </div>
 
       <div className="flex-1 flex gap-4 overflow-hidden">
-        <Card className="flex-1 flex flex-col overflow-hidden border-none shadow-md">
-          <CardHeader className="p-4 border-b bg-slate-50 dark:bg-slate-900/50 flex flex-row items-center justify-between">
+        <Card className="flex-1 flex flex-col overflow-hidden border-none shadow-md dark:bg-slate-900 dark:border-slate-800">
+          <CardHeader className="p-4 border-b dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              {selectedRecipientId === "ALL" ? <Users className="h-4 w-4 text-blue-600" /> : <User className="h-4 w-4 text-blue-600" />}
-              <CardTitle className="text-sm font-bold">
+              {selectedRecipientId === "ALL" ? <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" /> : <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
+              <CardTitle className="text-sm font-bold dark:text-slate-100">
                 {selectedRecipientId === "ALL" ? "Phòng chung" : `Chat với ${selectedRecipient?.name}`}
               </CardTitle>
             </div>
             {selectedRecipientId !== "ALL" && (
-              <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => setSelectedRecipientId("ALL")}>
+              <Button variant="ghost" size="sm" className="h-7 text-[10px] dark:text-slate-400 dark:hover:bg-slate-800" onClick={() => setSelectedRecipientId("ALL")}>
                 Quay lại phòng chung
               </Button>
             )}
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 dark:bg-slate-950/30">
               <div className="space-y-4">
                 {filteredMessages.map((msg) => {
                   const isMe = msg.senderId === currentUser.id;
@@ -98,8 +98,8 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
                       )}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        {!isMe && selectedRecipientId === "ALL" && <span className="text-[10px] font-bold text-slate-500">{msg.senderName}</span>}
-                        <span className="text-[9px] text-slate-400">
+                        {!isMe && selectedRecipientId === "ALL" && <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{msg.senderName}</span>}
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500">
                           {format(parseISO(msg.createdAt), "HH:mm")}
                         </span>
                       </div>
@@ -118,19 +118,19 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
                 })}
                 <div ref={scrollRef} />
                 {filteredMessages.length === 0 && (
-                  <div className="text-center py-10 text-slate-400 text-sm italic">
+                  <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-sm italic">
                     Chưa có tin nhắn nào. Hãy bắt đầu trò chuyện!
                   </div>
                 )}
               </div>
             </div>
 
-            <form onSubmit={handleSend} className="p-4 border-t bg-slate-50 dark:bg-slate-900/50 flex gap-2">
+            <form onSubmit={handleSend} className="p-4 border-t dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex gap-2">
               <Input
                 placeholder={selectedRecipientId === "ALL" ? "Nhắn vào phòng chung..." : `Nhắn cho ${selectedRecipient?.name}...`}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="flex-1 bg-white dark:bg-slate-900"
+                className="flex-1 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
               />
               <Button type="submit" size="icon" className="bg-blue-600 hover:bg-blue-700">
                 <Send className="h-4 w-4" />
@@ -139,9 +139,9 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
           </CardContent>
         </Card>
 
-        <Card className="w-64 hidden lg:flex flex-col overflow-hidden border-none shadow-md">
-          <CardHeader className="p-4 border-b bg-slate-50 dark:bg-slate-900/50">
-            <CardTitle className="text-sm font-bold">Thành viên ({staff.length})</CardTitle>
+        <Card className="w-64 hidden lg:flex flex-col overflow-hidden border-none shadow-md dark:bg-slate-900 dark:border-slate-800">
+          <CardHeader className="p-4 border-b dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+            <CardTitle className="text-sm font-bold dark:text-slate-100">Thành viên ({staff.length})</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden p-0">
             <div className="h-full overflow-y-auto">
@@ -150,7 +150,7 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
                   onClick={() => setSelectedRecipientId("ALL")}
                   className={cn(
                     "flex items-center gap-2 p-2 rounded-lg text-xs transition-colors cursor-pointer",
-                    selectedRecipientId === "ALL" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold" : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                    selectedRecipientId === "ALL" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold" : "hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-300"
                   )}
                 >
                   <Users className="h-3 w-3" />
@@ -165,16 +165,16 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
                     onClick={() => setSelectedRecipientId(s.id)}
                     className={cn(
                       "flex items-center gap-2 p-2 rounded-lg text-xs transition-colors cursor-pointer",
-                      selectedRecipientId === s.id ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold" : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                      selectedRecipientId === s.id ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold" : "hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-300"
                     )}
                   >
                     <div className={cn(
                       "h-2 w-2 rounded-full",
-                      s.status === "ACTIVE" ? "bg-green-500" : "bg-slate-300"
+                      s.status === "ACTIVE" ? "bg-green-500" : "bg-slate-300 dark:bg-slate-600"
                     )} />
                     <span className="font-medium truncate flex-1">{s.name}</span>
                     {s.role === "ADMIN" && (
-                      <span className="text-[8px] bg-blue-100 text-blue-700 px-1 rounded">Admin</span>
+                      <span className="text-[8px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-1 rounded">Admin</span>
                     )}
                   </div>
                 ))}

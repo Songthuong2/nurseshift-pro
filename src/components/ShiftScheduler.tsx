@@ -368,7 +368,7 @@ export default function ShiftScheduler({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className={cn("h-8 text-xs px-3", viewMode === "month" ? "shadow-sm bg-white dark:bg-slate-950 dark:text-slate-100" : "text-muted-foreground")}
+                className={cn("h-8 text-xs px-3", viewMode === "month" ? "shadow-sm bg-white dark:bg-slate-950 dark:text-slate-100" : "text-muted-foreground dark:text-slate-400")}
                 onClick={() => setViewMode("month")}
               >
                 <LayoutGrid className="h-3.5 w-3.5 mr-1.5" />
@@ -377,7 +377,7 @@ export default function ShiftScheduler({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className={cn("h-8 text-xs px-3", viewMode === "week" ? "shadow-sm bg-white dark:bg-slate-950 dark:text-slate-100" : "text-muted-foreground")}
+                className={cn("h-8 text-xs px-3", viewMode === "week" ? "shadow-sm bg-white dark:bg-slate-950 dark:text-slate-100" : "text-muted-foreground dark:text-slate-400")}
                 onClick={() => setViewMode("week")}
               >
                 <List className="h-3.5 w-3.5 mr-1.5" />
@@ -485,7 +485,7 @@ export default function ShiftScheduler({
         <div className="rounded-xl border dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-x-auto">
           <Table>
             <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
-              <TableRow>
+              <TableRow className="dark:border-slate-800">
                 <TableHead className="w-[80px] text-center dark:text-slate-300">Ngày</TableHead>
                 <TableHead className="w-[120px] dark:text-slate-300">Thứ</TableHead>
                 {Array.from({ length: nursesPerDay }).map((_, i) => (
@@ -504,7 +504,7 @@ export default function ShiftScheduler({
                   <TableRow 
                     key={dateStr} 
                     className={cn(
-                      "hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors h-16",
+                      "hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors h-16 dark:border-slate-800",
                       isWeekend && "bg-slate-50/30 dark:bg-slate-800/20",
                       holiday && "bg-orange-50/50 dark:bg-orange-900/10"
                     )}
@@ -702,9 +702,9 @@ function NurseSelector({
       <div
         className={cn(
           "flex items-center justify-between w-full border rounded-md h-9 px-2 text-xs transition-colors",
-          !selectedStaff && "text-muted-foreground italic bg-slate-50 dark:bg-slate-900/50",
-          selectedStaff && "bg-white dark:bg-slate-900",
-          hasViolation && "text-red-600 border-red-200 bg-red-50 dark:text-red-400 dark:border-red-900/50 dark:bg-red-900/20"
+          !selectedStaff && "text-muted-foreground italic bg-slate-50 dark:bg-slate-900/50 dark:border-slate-800",
+          selectedStaff && "bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200",
+          hasViolation && "text-red-600 border-red-200 bg-red-50 dark:text-red-400 dark:border-red-900/50 dark:bg-red-900/20 dark:border-red-900/50"
         )}
       >
         <div 
@@ -768,8 +768,8 @@ function NurseSelector({
                         }
                       }}
                       className={cn(
-                        "text-xs",
-                        isExcluded && "opacity-50 cursor-not-allowed bg-slate-50"
+                        "text-xs dark:text-slate-300",
+                        isExcluded && "opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800/50"
                       )}
                     >
                       <Check
