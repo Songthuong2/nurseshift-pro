@@ -22,13 +22,14 @@ interface ChatProps {
 
 export default function Chat({ currentUser, staff, messages = [], onSendMessage }: ChatProps) {
   const [content, setContent] = useState("");
+  const [selectedRecipientId, setSelectedRecipientId] = useState<string>("ALL");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, selectedRecipientId]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,32 +39,55 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
       id: crypto.randomUUID(),
       senderId: currentUser.id,
       senderName: currentUser.name,
-      receiverId: "ALL", // Group chat for now
+      receiverId: selectedRecipientId,
       content: content.trim(),
       createdAt: new Date().toISOString(),
     });
     setContent("");
   };
 
+  const filteredMessages = messages.filter(msg => {
+    if (selectedRecipientId === "ALL") {
+      return msg.receiverId === "ALL";
+    }
+    // Private chat: either I am the sender and they are the receiver, or vice versa
+    return (msg.senderId === currentUser.id && msg.receiverId === selectedRecipientId) ||
+           (msg.senderId === selectedRecipientId && msg.receiverId === currentUser.id);
+  });
+
+  const selectedRecipient = staff.find(s => s.id === selectedRecipientId);
+
   return (
     <div className="h-[calc(100vh-250px)] flex flex-col gap-4 animate-in fade-in duration-500">
-      <div className="flex items-center gap-2">
-        <MessageSquare className="h-5 w-5 text-blue-600" />
-        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Trò chuyện nội bộ</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-5 w-5 text-blue-600" />
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Trò chuyện nội bộ</h2>
+        </div>
+        <div className="text-xs text-slate-500 italic">
+          Đang chat: <span className="font-bold text-blue-600">{selectedRecipientId === "ALL" ? "Phòng chung" : selectedRecipient?.name}</span>
+        </div>
       </div>
 
       <div className="flex-1 flex gap-4 overflow-hidden">
         <Card className="flex-1 flex flex-col overflow-hidden border-none shadow-md">
-          <CardHeader className="p-4 border-b bg-slate-50 dark:bg-slate-900/50">
+          <CardHeader className="p-4 border-b bg-slate-50 dark:bg-slate-900/50 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-600" />
-              <CardTitle className="text-sm font-bold">Phòng chung</CardTitle>
+              {selectedRecipientId === "ALL" ? <Users className="h-4 w-4 text-blue-600" /> : <User className="h-4 w-4 text-blue-600" />}
+              <CardTitle className="text-sm font-bold">
+                {selectedRecipientId === "ALL" ? "Phòng chung" : `Chat với ${selectedRecipient?.name}`}
+              </CardTitle>
             </div>
+            {selectedRecipientId !== "ALL" && (
+              <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => setSelectedRecipientId("ALL")}>
+                Quay lại phòng chung
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
             <div className="flex-1 overflow-y-auto p-4">
               <div className="space-y-4">
-                {messages.map((msg) => {
+                {filteredMessages.map((msg) => {
                   const isMe = msg.senderId === currentUser.id;
                   return (
                     <div
@@ -74,7 +98,7 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
                       )}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        {!isMe && <span className="text-[10px] font-bold text-slate-500">{msg.senderName}</span>}
+                        {!isMe && selectedRecipientId === "ALL" && <span className="text-[10px] font-bold text-slate-500">{msg.senderName}</span>}
                         <span className="text-[9px] text-slate-400">
                           {format(parseISO(msg.createdAt), "HH:mm")}
                         </span>
@@ -93,7 +117,7 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
                   );
                 })}
                 <div ref={scrollRef} />
-                {messages.length === 0 && (
+                {filteredMessages.length === 0 && (
                   <div className="text-center py-10 text-slate-400 text-sm italic">
                     Chưa có tin nhắn nào. Hãy bắt đầu trò chuyện!
                   </div>
@@ -103,7 +127,7 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
 
             <form onSubmit={handleSend} className="p-4 border-t bg-slate-50 dark:bg-slate-900/50 flex gap-2">
               <Input
-                placeholder="Nhập tin nhắn..."
+                placeholder={selectedRecipientId === "ALL" ? "Nhắn vào phòng chung..." : `Nhắn cho ${selectedRecipient?.name}...`}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="flex-1 bg-white dark:bg-slate-900"
@@ -122,12 +146,26 @@ export default function Chat({ currentUser, staff, messages = [], onSendMessage 
           <CardContent className="flex-1 overflow-hidden p-0">
             <div className="h-full overflow-y-auto">
               <div className="p-2 space-y-1">
-                {staff.map((s) => (
+                <div
+                  onClick={() => setSelectedRecipientId("ALL")}
+                  className={cn(
+                    "flex items-center gap-2 p-2 rounded-lg text-xs transition-colors cursor-pointer",
+                    selectedRecipientId === "ALL" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold" : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                  )}
+                >
+                  <Users className="h-3 w-3" />
+                  <span>Phòng chung</span>
+                </div>
+                
+                <div className="my-2 border-t border-slate-100 dark:border-slate-800" />
+                
+                {staff.filter(s => s.id !== currentUser.id).map((s) => (
                   <div
                     key={s.id}
+                    onClick={() => setSelectedRecipientId(s.id)}
                     className={cn(
-                      "flex items-center gap-2 p-2 rounded-lg text-xs transition-colors",
-                      s.id === currentUser.id ? "bg-blue-50 dark:bg-blue-900/20" : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                      "flex items-center gap-2 p-2 rounded-lg text-xs transition-colors cursor-pointer",
+                      selectedRecipientId === s.id ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold" : "hover:bg-slate-50 dark:hover:bg-slate-800"
                     )}
                   >
                     <div className={cn(

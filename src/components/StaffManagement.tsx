@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, UserPlus, FileUp, Edit, Trash2, Info, Shield, Lock, Unlock } from "lucide-react";
+import { Search, UserPlus, FileUp, Edit, Trash2, Info, Shield, Lock, Unlock, RotateCcw } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -52,6 +52,7 @@ interface StaffManagementProps {
   onUpdateStaff: (staff: Staff) => void;
   onDeleteStaff: (id: string) => void;
   onImportStaff: (staffList: Staff[]) => void;
+  onResetPassword: (staffId: string) => void;
 }
 
 export default function StaffManagement({
@@ -60,6 +61,7 @@ export default function StaffManagement({
   onUpdateStaff,
   onDeleteStaff,
   onImportStaff,
+  onResetPassword,
 }: StaffManagementProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -394,6 +396,18 @@ export default function StaffManagement({
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => {
+                          if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu cho ${s.name} về mặc định (123456)?`)) {
+                            onResetPassword(s.id);
+                          }
+                        }}
+                        title="Đặt lại mật khẩu"
+                      >
+                        <RotateCcw className="h-4 w-4 text-amber-600" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(s)}>
                         <Edit className="h-4 w-4 text-blue-600" />
                       </Button>

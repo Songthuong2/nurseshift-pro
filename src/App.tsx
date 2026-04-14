@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Staff, Shift, Holiday, AppData, ShiftAssignment, LeaveRequest, Notification, Announcement, UserSettings, Message } from "@/src/types";
 import StaffManagement from "@/src/components/StaffManagement";
@@ -11,12 +11,14 @@ import ShiftScheduler from "@/src/components/ShiftScheduler";
 import HolidayManagement from "@/src/components/HolidayManagement";
 import SummaryDashboard from "@/src/components/SummaryDashboard";
 import LeaveRequestManagement from "@/src/components/LeaveRequestManagement";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import NotificationCenter from "@/src/components/NotificationCenter";
 import PersonalSchedule from "@/src/components/PersonalSchedule";
 import Chat from "@/src/components/Chat";
 import Login from "@/src/components/Login";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Users, CalendarDays, Palmtree, Stethoscope, Clock, Bell, LogOut, UserCircle, ClipboardList, Moon, Sun, Cloud, CloudOff, RefreshCw, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Users, CalendarDays, Palmtree, Stethoscope, Clock, Bell, LogOut, UserCircle, ClipboardList, Moon, Sun, Cloud, CloudOff, RefreshCw, MessageSquare, Key } from "lucide-react";
 import { EXAMPLE_LUNAR_HOLIDAYS, DEFAULT_SOLAR_HOLIDAYS } from "@/src/lib/date-utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -80,6 +82,9 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [isLoadingCloud, setIsLoadingCloud] = useState(isSupabaseConfigured);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [passwordData, setPasswordData] = useState({ current: "", new: "", confirm: "" });
+  const hasLoadedCloud = useRef(false);
 
   const currentUser = data.currentUser;
   const isAdmin = currentUser?.role === "ADMIN";
@@ -87,7 +92,8 @@ export default function App() {
   // Load from Supabase on mount
   useEffect(() => {
     async function loadCloudData() {
-      if (isSupabaseConfigured) {
+      if (isSupabaseConfigured && !hasLoadedCloud.current) {
+        hasLoadedCloud.current = true;
         setIsLoadingCloud(true);
         const cloudData = await supabaseService.loadAppData();
         if (cloudData) {
@@ -118,22 +124,24 @@ export default function App() {
     // Auto sync to cloud with debounce
     const timer = setTimeout(() => {
       if (isSupabaseConfigured && !isLoadingCloud) {
-        syncToCloud();
+        syncToCloud(undefined, true);
       }
-    }, 2000); // 2 seconds debounce
+    }, 5000); // 5 seconds debounce for auto-sync
 
     return () => clearTimeout(timer);
   }, [data]);
 
-  const syncToCloud = async (overrideData?: AppData) => {
+  const syncToCloud = async (overrideData?: AppData, silent = false) => {
     if (!isSupabaseConfigured) return;
     
     setIsSyncing(true);
     const success = await supabaseService.saveAppData(overrideData || data);
     if (success) {
       setLastSynced(new Date());
-      toast.success("Đã đồng bộ dữ liệu lên Cloud");
-    } else {
+      if (!silent) {
+        toast.success("Đã đồng bộ dữ liệu lên Cloud");
+      }
+    } else if (!silent) {
       toast.error("Lỗi đồng bộ dữ liệu Cloud");
     }
     setIsSyncing(false);
@@ -171,6 +179,14 @@ export default function App() {
 
   const handleImportStaff = (staffList: Staff[]) => {
     setData(prev => ({ ...prev, staff: [...prev.staff, ...staffList.map(s => ({ ...s, role: "NURSE" as const }))] }));
+  };
+
+  const handleResetPassword = (staffId: string) => {
+    setData(prev => ({
+      ...prev,
+      staff: prev.staff.map(s => s.id === staffId ? { ...s, password: "123456" } : s)
+    }));
+    toast.success("Đã đặt lại mật khẩu về mặc định (123456)");
   };
 
   const handleSaveShifts = (newShifts: Shift[]) => {
@@ -218,8 +234,6 @@ export default function App() {
         });
       }
 
-      toast.success("Đã lưu lịch trực thành công!");
-
       return {
         ...prev,
         shifts: newShifts,
@@ -227,6 +241,7 @@ export default function App() {
         announcements: [...prev.announcements, ...newAnnouncements]
       };
     });
+    toast.success("Đã lưu lịch trực thành công!");
   };
 
   const handleAddLeaveRequest = (req: LeaveRequest) => {
@@ -335,6 +350,38 @@ export default function App() {
     }));
   };
 
+  const handleChangePassword = () => {
+    if (!currentUser) return;
+    if (passwordData.new !== passwordData.confirm) {
+      toast.error("Mật khẩu xác nhận không khớp");
+      return;
+    }
+    if (passwordData.new.length < 6) {
+      toast.error("Mật khẩu mới phải có ít nhất 6 ký tự");
+      return;
+    }
+
+    const currentPassword = currentUser.password || "123456";
+    if (passwordData.current !== currentPassword) {
+      toast.error("Mật khẩu hiện tại không đúng");
+      return;
+    }
+
+    const updatedStaff = data.staff.map(s => 
+      s.id === currentUser.id ? { ...s, password: passwordData.new } : s
+    );
+
+    setData(prev => ({
+      ...prev,
+      staff: updatedStaff,
+      currentUser: { ...currentUser, password: passwordData.new }
+    }));
+
+    toast.success("Đã đổi mật khẩu thành công");
+    setIsPasswordDialogOpen(false);
+    setPasswordData({ current: "", new: "", confirm: "" });
+  };
+
   if (!currentUser) {
     return (
       <>
@@ -365,6 +412,15 @@ export default function App() {
                   <p className="font-bold text-slate-700 dark:text-slate-200">{currentUser.name}</p>
                   <p className="text-slate-500 dark:text-slate-400">{isAdmin ? "Quản trị viên" : "Điều dưỡng viên"}</p>
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6 ml-1 text-slate-400 hover:text-blue-600"
+                  onClick={() => setIsPasswordDialogOpen(true)}
+                  title="Đổi mật khẩu"
+                >
+                  <Key className="h-3.5 w-3.5" />
+                </Button>
               </div>
               
               <ThemeToggle />
@@ -463,6 +519,7 @@ export default function App() {
               onUpdateStaff={handleUpdateStaff}
               onDeleteStaff={handleDeleteStaff}
               onImportStaff={handleImportStaff}
+              onResetPassword={handleResetPassword}
             />
           </TabsContent>
 
@@ -539,6 +596,44 @@ export default function App() {
           </p>
         </div>
       </footer>
+
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Đổi mật khẩu</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Mật khẩu hiện tại</label>
+              <Input 
+                type="password" 
+                value={passwordData.current}
+                onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Mật khẩu mới</label>
+              <Input 
+                type="password" 
+                value={passwordData.new}
+                onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Xác nhận mật khẩu mới</label>
+              <Input 
+                type="password" 
+                value={passwordData.confirm}
+                onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>Hủy</Button>
+            <Button onClick={handleChangePassword} className="bg-blue-600 hover:bg-blue-700">Cập nhật</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <Toaster position="top-right" richColors />
     </div>
