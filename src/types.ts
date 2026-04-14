@@ -14,6 +14,7 @@ export interface Staff {
   email?: string;
   role: UserRole;
   password?: string; // For mock auth
+  status: "ACTIVE" | "LOCKED";
   targetShifts?: number;
   notes?: string;
   availableDays?: number[]; // 0-6 for Sun-Sat
@@ -69,6 +70,15 @@ export interface Announcement {
   type: "INFO" | "WARNING" | "URGENT";
 }
 
+export interface Message {
+  id: string;
+  senderId: string;
+  senderName: string;
+  receiverId: string; // "ALL" for group chat
+  content: string;
+  createdAt: string;
+}
+
 export interface UserSettings {
   emailNotifications: boolean;
   appNotifications: boolean;
@@ -82,6 +92,7 @@ export interface AppData {
   leaveRequests: LeaveRequest[];
   notifications: Notification[];
   announcements: Announcement[];
+  messages: Message[];
   currentUser: Staff | null;
   settings: Record<string, UserSettings>; // userId -> settings
   config: {

@@ -32,6 +32,7 @@ export default function Login({ staff, onLogin }: LoginProps) {
         code: "ADMIN",
         department: "Quản lý",
         role: "ADMIN",
+        status: "ACTIVE",
       });
       toast.success("Đăng nhập thành công với quyền Admin");
       return;
@@ -39,9 +40,18 @@ export default function Login({ staff, onLogin }: LoginProps) {
 
     const user = staff.find(s => s.code === code);
     if (user) {
-      // In a real app, we'd check password. Here we just allow it for demo.
-      onLogin(user);
-      toast.success(`Chào mừng trở lại, ${user.name}`);
+      if (user.status === "LOCKED") {
+        toast.error("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.");
+        return;
+      }
+
+      const validPassword = user.password || "123456";
+      if (password === validPassword) {
+        onLogin(user);
+        toast.success(`Chào mừng trở lại, ${user.name}`);
+      } else {
+        toast.error("Mật khẩu không đúng");
+      }
     } else {
       toast.error("Mã nhân viên hoặc mật khẩu không đúng");
     }

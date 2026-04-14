@@ -23,7 +23,15 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, UserPlus, FileUp, Edit, Trash2, Info } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Search, UserPlus, FileUp, Edit, Trash2, Info, Shield, Lock, Unlock } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -81,6 +89,9 @@ export default function StaffManagement({
         department: formData.department || "Điều dưỡng",
         phone: formData.phone,
         email: formData.email,
+        role: formData.role || "NURSE",
+        status: formData.status || "ACTIVE",
+        password: "123456",
       } as Staff);
       toast.success("Đã thêm nhân viên mới");
     }
@@ -134,6 +145,8 @@ export default function StaffManagement({
             targetShifts: parseInt(getValue(["Số buổi trực", "Target Shifts"])) || undefined,
             notes: getValue(["Ghi chú", "Notes"]),
             role: "NURSE" as const,
+            status: "ACTIVE" as const,
+            password: "123456",
           };
         }).filter(s => s.name && s.code);
 
@@ -283,6 +296,36 @@ export default function StaffManagement({
                   </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
+                  <label className="text-right text-sm font-medium">Quyền hạn</label>
+                  <Select
+                    value={formData.role || "NURSE"}
+                    onValueChange={(val) => setFormData({ ...formData, role: val as any })}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ADMIN">Quản trị viên</SelectItem>
+                      <SelectItem value="NURSE">Điều dưỡng viên</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label className="text-right text-sm font-medium">Trạng thái</label>
+                  <Select
+                    value={formData.status || "ACTIVE"}
+                    onValueChange={(val) => setFormData({ ...formData, status: val as any })}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACTIVE">Hoạt động</SelectItem>
+                      <SelectItem value="LOCKED">Đã khóa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
                   <label className="text-right text-sm font-medium">Ghi chú</label>
                   <Input
                     className="col-span-3"
@@ -309,6 +352,7 @@ export default function StaffManagement({
               <TableHead className="dark:text-slate-300">Họ và tên</TableHead>
               <TableHead className="dark:text-slate-300">Tên quy ước</TableHead>
               <TableHead className="dark:text-slate-300">Khoa/Phòng</TableHead>
+              <TableHead className="dark:text-slate-300">Trạng thái</TableHead>
               <TableHead className="dark:text-slate-300">Ghi chú/Lịch</TableHead>
               <TableHead className="text-right dark:text-slate-300">Thao tác</TableHead>
             </TableRow>
@@ -321,6 +365,13 @@ export default function StaffManagement({
                   <TableCell className="font-medium text-slate-900 dark:text-slate-200">{s.name}</TableCell>
                   <TableCell className="text-blue-600 dark:text-blue-400 font-medium">{s.code}</TableCell>
                   <TableCell className="dark:text-slate-300">{s.department}</TableCell>
+                  <TableCell>
+                    {s.status === "ACTIVE" ? (
+                      <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Hoạt động</Badge>
+                    ) : (
+                      <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-none">Đã khóa</Badge>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
                       {s.targetShifts && (

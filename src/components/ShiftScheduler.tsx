@@ -68,6 +68,7 @@ interface ShiftSchedulerProps {
   shifts: Shift[];
   holidays: Holiday[];
   onSaveShifts: (updatedShifts: Shift[]) => void;
+  isAdmin?: boolean;
 }
 
 export default function ShiftScheduler({
@@ -75,6 +76,7 @@ export default function ShiftScheduler({
   shifts,
   holidays,
   onSaveShifts,
+  isAdmin = false,
 }: ShiftSchedulerProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"week" | "month">("month");
@@ -399,15 +401,17 @@ export default function ShiftScheduler({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleAutoSchedule}
-                className="h-9 border-blue-200 dark:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-              >
-                <Wand2 className="h-4 w-4 mr-2" />
-                Tự động sắp lịch
-              </Button>
+              {isAdmin && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleAutoSchedule}
+                  className="h-9 border-blue-200 dark:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Tự động sắp lịch
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -417,16 +421,18 @@ export default function ShiftScheduler({
                 <Download className="h-4 w-4 mr-2" />
                 Xuất Excel
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleImportExcel}
-                className="h-9 border-amber-200 dark:border-amber-900/50 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Tải Excel
-              </Button>
-              {isDirty && (
+              {isAdmin && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleImportExcel}
+                  className="h-9 border-amber-200 dark:border-amber-900/50 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Tải Excel
+                </Button>
+              )}
+              {isDirty && isAdmin && (
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -437,21 +443,24 @@ export default function ShiftScheduler({
                   Hoàn tác
                 </Button>
               )}
-              <Button 
-                variant="default" 
-                size="sm" 
-                onClick={handleSave}
-                className="h-9 bg-blue-600 hover:bg-blue-700"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Lưu lại
-              </Button>
+              {isAdmin && (
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  onClick={handleSave}
+                  className="h-9 bg-blue-600 hover:bg-blue-700"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Lưu lại
+                </Button>
+              )}
             </div>
 
             <div className="flex flex-col gap-1">
               <Select
                 value={nursesPerDay.toString()}
                 onValueChange={(val) => setNursesPerDay(parseInt(val))}
+                disabled={!isAdmin}
               >
               <SelectTrigger className="w-[150px] h-9 dark:border-slate-700 dark:bg-slate-900">
                   <Users className="h-4 w-4 mr-2" />
@@ -469,7 +478,7 @@ export default function ShiftScheduler({
           </div>
           
           <div className="text-sm text-muted-foreground italic">
-            * Nhấn giữ để kéo thả nhân viên sang ngày khác
+            {isAdmin ? "* Nhấn giữ để kéo thả nhân viên sang ngày khác" : "* Bạn chỉ có quyền xem lịch trực"}
           </div>
         </div>
 
@@ -534,6 +543,7 @@ export default function ShiftScheduler({
                             shifts={localShifts}
                             currentDateStr={dateStr}
                             index={i}
+                            isAdmin={isAdmin}
                             onSelect={(newStaffId) => {
                               const newAssignments = [...currentAssignments];
                               while (newAssignments.length < nursesPerDay) newAssignments.push({ staffId: "" });
@@ -582,6 +592,7 @@ function DraggableNurseSelector({
   shifts,
   currentDateStr,
   index,
+  isAdmin,
   onSelect
 }: {
   id: string;
@@ -591,6 +602,7 @@ function DraggableNurseSelector({
   shifts: Shift[];
   currentDateStr: string;
   index: number;
+  isAdmin: boolean;
   onSelect: (id: string) => void;
 }) {
   const {
@@ -606,7 +618,7 @@ function DraggableNurseSelector({
       index,
       staffId: selectedId,
     },
-    disabled: !selectedId,
+    disabled: !selectedId || !isAdmin,
   });
 
   const style = {
@@ -626,8 +638,9 @@ function DraggableNurseSelector({
         excludeIds={excludeIds}
         shifts={shifts}
         currentDateStr={currentDateStr}
+        isAdmin={isAdmin}
         onSelect={onSelect}
-        dragHandleProps={selectedId ? { ...attributes, ...listeners } : undefined}
+        dragHandleProps={selectedId && isAdmin ? { ...attributes, ...listeners } : undefined}
       />
     </div>
   );
@@ -639,6 +652,7 @@ function NurseSelector({
   excludeIds = [],
   shifts = [],
   currentDateStr,
+  isAdmin,
   onSelect,
   dragHandleProps
 }: { 
@@ -647,6 +661,7 @@ function NurseSelector({
   excludeIds?: string[];
   shifts?: Shift[];
   currentDateStr: string;
+  isAdmin: boolean;
   onSelect: (id: string) => void;
   dragHandleProps?: any;
 }) {
@@ -695,7 +710,7 @@ function NurseSelector({
         <div 
           className={cn(
             "flex-1 truncate py-1", 
-            selectedId ? "cursor-grab active:cursor-grabbing" : "cursor-default",
+            selectedId && isAdmin ? "cursor-grab active:cursor-grabbing" : "cursor-default",
             hasViolation && "font-bold"
           )}
           {...dragHandleProps}
@@ -703,108 +718,112 @@ function NurseSelector({
           {selectedStaff ? selectedStaff.code : "Trống"}
         </div>
         
-        <PopoverTrigger
-          className="h-6 w-6 ml-1 flex items-center justify-center rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        >
-          <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
-        </PopoverTrigger>
+        {isAdmin && (
+          <PopoverTrigger
+            className="h-6 w-6 ml-1 flex items-center justify-center rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+          </PopoverTrigger>
+        )}
       </div>
-      <PopoverContent className="w-[200px] p-0">
-        <Command>
-          <CommandInput placeholder="Tìm tên..." className="h-8 text-xs" />
-          <CommandList>
-            <CommandEmpty>Không tìm thấy.</CommandEmpty>
-            <CommandGroup>
-              <CommandItem
-                value="none"
-                onSelect={() => {
-                  onSelect("");
-                  setOpen(false);
-                }}
-                className="text-xs"
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-3 w-3",
-                    selectedId === "" ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                (Trống)
-              </CommandItem>
-              {staff.map((s) => {
-                const isExcluded = excludeIds.includes(s.id);
-                const distance = getNearestShiftDistance(s.id);
-                const monthlyCount = getStaffMonthlyCount(s.id);
-                const isUnavailable = s.unavailableDays?.includes(parseISO(currentDateStr).getDay());
-                const isOverTarget = s.targetShifts && monthlyCount >= s.targetShifts;
-                
-                return (
-                  <CommandItem
-                    key={s.id}
-                    value={`${s.code} ${s.name}`}
-                    disabled={isExcluded}
-                    onSelect={() => {
-                      if (!isExcluded) {
-                        onSelect(s.id);
-                        setOpen(false);
-                      }
-                    }}
+      {isAdmin && (
+        <PopoverContent className="w-[200px] p-0">
+          <Command>
+            <CommandInput placeholder="Tìm tên..." className="h-8 text-xs" />
+            <CommandList>
+              <CommandEmpty>Không tìm thấy.</CommandEmpty>
+              <CommandGroup>
+                <CommandItem
+                  value="none"
+                  onSelect={() => {
+                    onSelect("");
+                    setOpen(false);
+                  }}
+                  className="text-xs"
+                >
+                  <Check
                     className={cn(
-                      "text-xs",
-                      isExcluded && "opacity-50 cursor-not-allowed bg-slate-50"
+                      "mr-2 h-3 w-3",
+                      selectedId === "" ? "opacity-100" : "opacity-0"
                     )}
-                  >
-                    <Check
+                  />
+                  (Trống)
+                </CommandItem>
+                {staff.map((s) => {
+                  const isExcluded = excludeIds.includes(s.id);
+                  const distance = getNearestShiftDistance(s.id);
+                  const monthlyCount = getStaffMonthlyCount(s.id);
+                  const isUnavailable = s.unavailableDays?.includes(parseISO(currentDateStr).getDay());
+                  const isOverTarget = s.targetShifts && monthlyCount >= s.targetShifts;
+                  
+                  return (
+                    <CommandItem
+                      key={s.id}
+                      value={`${s.code} ${s.name}`}
+                      disabled={isExcluded}
+                      onSelect={() => {
+                        if (!isExcluded) {
+                          onSelect(s.id);
+                          setOpen(false);
+                        }
+                      }}
                       className={cn(
-                        "mr-2 h-3 w-3",
-                        selectedId === s.id ? "opacity-100" : "opacity-0"
+                        "text-xs",
+                        isExcluded && "opacity-50 cursor-not-allowed bg-slate-50"
                       )}
-                    />
-                    <div className="flex flex-col flex-1">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold">{s.code}</span>
-                          {distance !== null && (
-                            <span className={cn(
-                              "text-[9px] px-1 rounded font-medium",
-                              distance < 2 ? "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400" : 
-                              distance < 4 ? "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400" : 
-                              "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400"
-                            )}>
-                              {distance} ngày
-                            </span>
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-3 w-3",
+                          selectedId === s.id ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      <div className="flex flex-col flex-1">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold">{s.code}</span>
+                            {distance !== null && (
+                              <span className={cn(
+                                "text-[9px] px-1 rounded font-medium",
+                                distance < 2 ? "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400" : 
+                                distance < 4 ? "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400" : 
+                                "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400"
+                              )}>
+                                {distance} ngày
+                              </span>
+                            )}
+                            {isUnavailable && (
+                              <span className="text-[9px] bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 px-1 rounded font-medium">
+                                Lịch nghỉ
+                              </span>
+                            )}
+                            {isOverTarget && (
+                              <span className="text-[9px] bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400 px-1 rounded font-medium">
+                                Đủ ca ({monthlyCount})
+                              </span>
+                            )}
+                          </div>
+                          {isExcluded && (
+                            <span className="text-[9px] bg-slate-200 px-1 rounded text-slate-500">Đã chọn</span>
                           )}
-                          {isUnavailable && (
-                            <span className="text-[9px] bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 px-1 rounded font-medium">
-                              Lịch nghỉ
-                            </span>
-                          )}
-                          {isOverTarget && (
-                            <span className="text-[9px] bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400 px-1 rounded font-medium">
-                              Đủ ca ({monthlyCount})
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] text-muted-foreground">{s.name}</span>
+                          {s.notes && (
+                            <span className="text-[9px] text-slate-400 italic truncate max-w-[80px]">
+                              {s.notes}
                             </span>
                           )}
                         </div>
-                        {isExcluded && (
-                          <span className="text-[9px] bg-slate-200 px-1 rounded text-slate-500">Đã chọn</span>
-                        )}
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-muted-foreground">{s.name}</span>
-                        {s.notes && (
-                          <span className="text-[9px] text-slate-400 italic truncate max-w-[80px]">
-                            {s.notes}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      )}
     </Popover>
   );
 }

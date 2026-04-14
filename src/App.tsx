@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Staff, Shift, Holiday, AppData, ShiftAssignment, LeaveRequest, Notification, Announcement, UserSettings } from "@/src/types";
+import { Staff, Shift, Holiday, AppData, ShiftAssignment, LeaveRequest, Notification, Announcement, UserSettings, Message } from "@/src/types";
 import StaffManagement from "@/src/components/StaffManagement";
 import ShiftScheduler from "@/src/components/ShiftScheduler";
 import HolidayManagement from "@/src/components/HolidayManagement";
@@ -13,9 +13,10 @@ import SummaryDashboard from "@/src/components/SummaryDashboard";
 import LeaveRequestManagement from "@/src/components/LeaveRequestManagement";
 import NotificationCenter from "@/src/components/NotificationCenter";
 import PersonalSchedule from "@/src/components/PersonalSchedule";
+import Chat from "@/src/components/Chat";
 import Login from "@/src/components/Login";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Users, CalendarDays, Palmtree, Stethoscope, Clock, Bell, LogOut, UserCircle, ClipboardList, Moon, Sun, Cloud, CloudOff, RefreshCw } from "lucide-react";
+import { LayoutDashboard, Users, CalendarDays, Palmtree, Stethoscope, Clock, Bell, LogOut, UserCircle, ClipboardList, Moon, Sun, Cloud, CloudOff, RefreshCw, MessageSquare } from "lucide-react";
 import { EXAMPLE_LUNAR_HOLIDAYS, DEFAULT_SOLAR_HOLIDAYS } from "@/src/lib/date-utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -55,6 +56,7 @@ export default function App() {
         leaveRequests: parsed.leaveRequests || [],
         notifications: parsed.notifications || [],
         announcements: parsed.announcements || [],
+        messages: parsed.messages || [],
         currentUser: parsed.currentUser || null,
         settings: parsed.settings || {},
         config: parsed.config || { nursesPerDay: 3 }
@@ -68,6 +70,7 @@ export default function App() {
       leaveRequests: [],
       notifications: [],
       announcements: [],
+      messages: [],
       currentUser: null,
       settings: {},
       config: { nursesPerDay: 3 }
@@ -95,6 +98,7 @@ export default function App() {
             leaveRequests: cloudData.leaveRequests || [],
             notifications: cloudData.notifications || [],
             announcements: cloudData.announcements || [],
+            messages: cloudData.messages || [],
             settings: cloudData.settings || {},
             config: cloudData.config || { nursesPerDay: 3 },
             currentUser: prev.currentUser // Keep current login session
@@ -324,6 +328,13 @@ export default function App() {
 
   const unreadCount = userNotifications.filter(n => !n.read).length;
 
+  const handleSendMessage = (message: Message) => {
+    setData(prev => ({
+      ...prev,
+      messages: [...(prev.messages || []), message]
+    }));
+  };
+
   if (!currentUser) {
     return (
       <>
@@ -429,6 +440,10 @@ export default function App() {
                   <Bell className="h-4 w-4 mr-2" />
                   Thông báo
                 </TabsTrigger>
+                <TabsTrigger value="chat" className="data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 px-5 py-2.5 rounded-lg transition-all border border-transparent data-[state=active]:border-blue-100 dark:data-[state=active]:border-blue-900/50 !h-auto">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Trò chuyện
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -457,6 +472,7 @@ export default function App() {
               shifts={data.shifts}
               holidays={data.holidays}
               onSaveShifts={handleSaveShifts}
+              isAdmin={isAdmin}
             />
           </TabsContent>
 
@@ -502,6 +518,15 @@ export default function App() {
               onAddNotification={handleAddNotification}
               onAddAnnouncement={handleAddAnnouncement}
               onDeleteAnnouncement={handleDeleteAnnouncement}
+            />
+          </TabsContent>
+
+          <TabsContent value="chat">
+            <Chat 
+              currentUser={currentUser}
+              staff={data.staff}
+              messages={data.messages}
+              onSendMessage={handleSendMessage}
             />
           </TabsContent>
         </Tabs>
