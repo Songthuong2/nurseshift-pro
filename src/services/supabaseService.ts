@@ -8,17 +8,7 @@ import { AppData } from '../types';
 
 const STATE_ID = '00000000-0000-0000-0000-000000000000';
 
-let lastError: any = null;
-
 export const supabaseService = {
-  getLastError() {
-    return lastError;
-  },
-
-  clearLastError() {
-    lastError = null;
-  },
-
   async saveAppData(data: AppData): Promise<boolean> {
     if (!isSupabaseConfigured) return false;
 
@@ -32,10 +22,8 @@ export const supabaseService = {
         });
 
       if (error) throw error;
-      lastError = null;
       return true;
     } catch (error) {
-      lastError = error;
       console.error('Error saving to Supabase:', error);
       return false;
     }
@@ -59,10 +47,8 @@ export const supabaseService = {
         throw error;
       }
 
-      lastError = null;
       return data.data as AppData;
     } catch (error) {
-      lastError = error;
       console.error('Error loading from Supabase:', error);
       return null;
     }

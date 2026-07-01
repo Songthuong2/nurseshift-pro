@@ -108,8 +108,6 @@ export default function App() {
   const [isLoadingCloud, setIsLoadingCloud] = useState(isSupabaseConfigured);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [passwordData, setPasswordData] = useState({ current: "", new: "", confirm: "" });
-  const [supabaseError, setSupabaseError] = useState<any>(null);
-  const [isSupabaseInstructionsOpen, setIsSupabaseInstructionsOpen] = useState(false);
   const hasLoadedCloud = useRef(false);
   const prevNotificationsRef = useRef<string[]>([]);
   const isLoadedRef = useRef(false);
@@ -612,10 +610,6 @@ export default function App() {
         hasLoadedCloud.current = true;
         setIsLoadingCloud(true);
         const cloudData = await supabaseService.loadAppData();
-        const err = supabaseService.getLastError();
-        if (err) {
-          setSupabaseError(err);
-        }
         if (cloudData) {
           setData(prev => ({
             staff: cloudData.staff || [],
@@ -677,12 +671,6 @@ export default function App() {
       ) {
         try {
           const cloudData = await supabaseService.loadAppData();
-          const err = supabaseService.getLastError();
-          if (err) {
-            setSupabaseError(err);
-          } else {
-            setSupabaseError(null);
-          }
           if (cloudData && isMounted) {
             setData(prev => {
               // We check if messages, notifications, shifts, leave requests or staff have updated
@@ -729,12 +717,6 @@ export default function App() {
     
     setIsSyncing(true);
     const success = await supabaseService.saveAppData(overrideData || data);
-    const err = supabaseService.getLastError();
-    if (err) {
-      setSupabaseError(err);
-    } else {
-      setSupabaseError(null);
-    }
     if (success) {
       setLastSynced(new Date());
       if (!silent) {
@@ -1145,29 +1127,15 @@ export default function App() {
               <ThemeToggle />
 
               {isSupabaseConfigured && (
-                <div className="flex items-center gap-1">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => syncToCloud()} 
-                    disabled={isSyncing}
-                    title={lastSynced ? `Đồng bộ lần cuối: ${lastSynced.toLocaleTimeString()}` : "Đồng bộ Cloud"}
-                  >
-                    <RefreshCw className={cn("h-5 w-5 text-blue-600 dark:text-blue-400", isSyncing && "animate-spin")} />
-                  </Button>
-                  
-                  {supabaseError && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-amber-500 hover:text-amber-600 animate-pulse h-9 w-9 p-0"
-                      onClick={() => setIsSupabaseInstructionsOpen(true)}
-                      title="Lỗi kết nối Supabase Cloud. Nhấp để xem hướng dẫn sửa lỗi!"
-                    >
-                      <AlertTriangle className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => syncToCloud()} 
+                  disabled={isSyncing}
+                  title={lastSynced ? `Đồng bộ lần cuối: ${lastSynced.toLocaleTimeString()}` : "Đồng bộ Cloud"}
+                >
+                  <RefreshCw className={cn("h-5 w-5 text-blue-600", isSyncing && "animate-spin")} />
+                </Button>
               )}
 
               {!isSupabaseConfigured && (
@@ -1586,84 +1554,6 @@ export default function App() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>Hủy</Button>
             <Button onClick={handleChangePassword} className="bg-blue-600 hover:bg-blue-700">Cập nhật</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isSupabaseInstructionsOpen} onOpenChange={setIsSupabaseInstructionsOpen}>
-        <DialogContent className="sm:max-w-2xl overflow-y-auto max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="h-5 w-5" />
-              <span>Hướng dẫn cấu hình Cơ sở dữ liệu Supabase</span>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-            <p>
-              Ứng dụng của bạn đã cấu hình kết nối Supabase, tuy nhiên bảng <code className="bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded font-mono font-bold">app_state</code> chưa được tạo trong cơ sở dữ liệu Supabase.
-            </p>
-            <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
-              <p className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <Info className="h-4 w-4 text-blue-500" />
-                Các bước thực hiện để sửa lỗi:
-              </p>
-              <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>Truy cập vào trang quản trị dự án <strong className="text-slate-950 dark:text-white">Supabase Dashboard</strong> của bạn.</li>
-                <li>Mở mục <strong className="text-slate-950 dark:text-white">SQL Editor</strong> ở thanh menu bên trái.</li>
-                <li>Bấm vào nút <strong className="text-slate-950 dark:text-white">New query</strong> để tạo một câu truy vấn SQL mới.</li>
-                <li>Sao chép toàn bộ đoạn mã SQL bên dưới và dán vào trình biên tập.</li>
-                <li>Nhấn nút <strong className="text-slate-950 dark:text-white font-bold text-emerald-600 dark:text-emerald-400">Run</strong> ở góc dưới bên phải để thực hiện lệnh tạo bảng.</li>
-              </ol>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-900 dark:text-slate-100">Đoạn mã SQL khởi tạo:</span>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => {
-                    const sqlText = `CREATE TABLE app_state (
-  id UUID PRIMARY KEY,
-  data JSONB NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Bật tính năng bảo mật Row Level Security (RLS)
-ALTER TABLE app_state ENABLE ROW LEVEL SECURITY;
-
--- Cho phép quyền truy cập công khai (đọc/ghi) cho bản thử nghiệm dễ dàng
-CREATE POLICY "Allow public access" ON app_state FOR ALL USING (true) WITH CHECK (true);`;
-                    navigator.clipboard.writeText(sqlText);
-                    toast.success("Đã sao chép mã SQL vào bộ nhớ tạm!");
-                  }}
-                  className="h-8 gap-1"
-                >
-                  <ClipboardList className="h-3.5 w-3.5" />
-                  Sao chép SQL
-                </Button>
-              </div>
-              <pre className="p-4 bg-slate-950 text-slate-200 rounded-xl font-mono text-[11px] overflow-x-auto border border-slate-800 leading-normal">
-{`CREATE TABLE app_state (
-  id UUID PRIMARY KEY,
-  data JSONB NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Bật tính năng bảo mật Row Level Security (RLS)
-ALTER TABLE app_state ENABLE ROW LEVEL SECURITY;
-
--- Cho phép quyền truy cập công khai (đọc/ghi) cho bản thử nghiệm dễ dàng
-CREATE POLICY "Allow public access" ON app_state FOR ALL USING (true) WITH CHECK (true);`}
-              </pre>
-            </div>
-
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 text-[12px] rounded-lg border border-amber-100 dark:border-amber-900/40 text-amber-800 dark:text-amber-300">
-              <strong>Lưu ý:</strong> Sau khi chạy câu lệnh thành công trên Supabase dashboard, hãy bấm nút <strong className="underline">Đồng bộ Cloud</strong> ở thanh công cụ phía trên để hoàn tất kết nối dữ liệu.
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setIsSupabaseInstructionsOpen(false)}>Đóng</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
